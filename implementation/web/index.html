@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skyliner</title>
+<meta name="description" content="Enter a position on the sky and see real NASA SPHEREx infrared images of it in time order, to look for something that moves.">
+<!--
+  The front door of the Skyliner web app: a blank page with one form. A person enters RA and Dec. If that position is prepared,
+  the viewer opens at once; if not, the local service (implementation/server/app.py) prepares it and this page shows a progress bar.
+  SI-GENERATED CODE: written with SI assistance (Claude Sonnet 5.5, 2026-11-15); see docs/si-log.md. No dependencies, no build.
+-->
+<link rel="stylesheet" href="drafts/base.css">
+<link rel="stylesheet" href="drafts/skin-1-studio.css">
+<link rel="stylesheet" href="landing.css">
+</head>
+<body>
+<input class="sr" type="checkbox" id="t-light" aria-label="Light theme">
+<header class="top">
+  <div class="brand"><b>Skyliner</b><small>SPHEREx</small></div>
+  <span class="spacer"></span>
+  <label class="btn" for="t-light" role="button" title="Switch dark and light theme"><span class="on-dark">Dark</span><span class="on-light">Light</span></label>
+</header>
+
+<main class="lp">
+  <h1>See a patch of sky change over time</h1>
+  <p class="lede">Real infrared images from NASA&rsquo;s SPHEREx mission, played in time order like a short video, so you can look for something that moves.</p>
+
+  <form class="lf" id="lf" novalidate>
+    <div class="lf-row"><label for="l-ra">Right ascension (RA)</label><input id="l-ra" type="text" inputmode="text" placeholder="133.7951   or   08h55m10.8s" title="Degrees, or hours like 08h55m10.8s" aria-describedby="l-msg"></div>
+    <div class="lf-row"><label for="l-dec">Declination (Dec)</label><input id="l-dec" type="text" inputmode="text" placeholder="-7.2451   or   -7d14m42.5s" title="Degrees, or like -7d14m42.5s" aria-describedby="l-msg"></div>
+    <button class="btn primary lf-go" id="l-go" type="submit">Show this position</button>
+  </form>
+  <p class="lf-msg" id="l-msg" role="status" aria-live="polite"></p>
+  <p class="lf-svc" id="l-svc" hidden>The preparation service is not running yet. Positions that were prepared before open without it. For a new position, start it with <code>./start.sh</code> in the project folder: this page waits for it and carries on by itself.</p>
+
+  <div class="lp-ex"><span>Or try one of NASA&rsquo;s test targets:</span><span id="l-chips"></span></div>
+
+  <ul class="lp-how">
+    <li>A position that was looked at before opens at once.</li>
+    <li>A new position is fetched from NASA&rsquo;s public archive while you wait. That takes a few minutes, with a progress bar, and then it stays ready.</li>
+    <li>This page shows images only. It does not detect or name moving objects.</li>
+  </ul>
+</main>
+
+<script>document.write('<script src="../data/cache/cell_demo/targets.js" onerror="window.TARGETS_MISSING=true"><\/script>');</script>
+<script src="lib/coords.js"></script>
+<script src="lib/prepare.js"></script>
+<script>
+(() => {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const ra = $('l-ra'), dec = $('l-dec'), go = $('l-go'), msg = $('l-msg');
+  SkyPrepare.viewer = 'drafts/v1-studio-real.html';
+  const say = (t, err) => { msg.textContent = t; msg.classList.toggle('err', !!err); };
+
+  /* the theme is remembered with the viewer's own setting */
+  try { if (JSON.parse(localStorage.getItem('skyflip.real.theme')) === 'light') $('t-light').checked = true; } catch (e) { /* storage may be blocked */ }
+  $('t-light').addEventListener('change', () => { try { localStorage.setItem('skyflip.real.theme', JSON.stringify($('t-light').checked ? 'light' : 'dark')); } catch (e) { /* ignore */ } });
+
+  SkyCoords.attachBox(ra, 'RA takes degrees (133.795) or hours, minutes and seconds (08h55m10.8s). Other letters are not allowed.', (h) => say(h, true));
+  SkyCoords.attachBox(dec, 'Dec takes degrees (-7.2451) or degrees, minutes and seconds (-7d14m42.5s). Other letters are not allowed.', (h) => say(h, true));
+
+  async function run(r, d) {
+    go.disabled = true;
+    say('Looking for this position...');
+    const res = await SkyPrepare.go(r, d, 'D6');
+    if (res.state === 'ready') { say('Opening...'); SkyPrepare.openPatch(res.key, r, d, 'D6'); return; }
+    go.disabled = false;
+    if (res.state === 'failed') say(res.shown ? '' : res.message, !res.shown);
+    else say('Cancelled.');
+  }
+
+  $('lf').addEventListener('submit', (e) => {
+    e.preventDefault();
+    [ra, dec].forEach((el) => el.removeAttribute('aria-invalid'));
+    const r = SkyCoords.parseAngle(ra.value, true), d = SkyCoords.parseAngle(dec.value, false), bad = [];
+    if (Number.isNaN(r)) { ra.setAttribute('aria-invalid', 'true'); bad.push('RA must be 0 to 360 degrees, or hours like 08h55m10.8s'); }
+    if (Number.isNaN(d)) { dec.setAttribute('aria-invalid', 'true'); bad.push('Dec must be -90 to 90 degrees, or like -7d14m42.5s'); }
+    if (bad.length) { say(bad.join('. ') + '.', true); (Number.isNaN(r) ? ra : dec).focus(); return; }
+    run(r, d);
+  });
+
+  /* test targets: the patches already prepared, or WISE 0855 (NASA lists its position) when the list is not there */
+  const list = (window.TARGETS || []).length ? window.TARGETS.map((t) => ({ name: SkyCoords.friendlyName(t.name), ra: t.ra, dec: t.dec })) : [{ name: 'WISE 0855', ra: 133.795129, dec: -7.245147 }];
+  for (const t of list.filter((x) => /Barnard|WISE|Dra|Aur|Ind/.test(x.name))) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.textContent = t.name;
+    b.addEventListener('click', () => { ra.value = t.ra.toFixed(4); dec.value = t.dec.toFixed(4); [ra, dec].forEach((el) => el.removeAttribute('aria-invalid')); run(t.ra, t.dec); });
+    $('l-chips').appendChild(b);
+  }
+
+  /* tell the person early whether the service that prepares new positions is running, and keep checking while it is not */
+  (async () => { const svc = $('l-svc'); for (;;) { if (await SkyPrepare.available()) { svc.hidden = true; return; } svc.hidden = false; await new Promise((r) => setTimeout(r, 3000)); } })();
+
+  /* a link with ?ra=&dec= (degrees) fills the form and runs it */
+  const q = new URLSearchParams(location.search), qr = parseFloat(q.get('ra')), qd = parseFloat(q.get('dec'));
+  if (Number.isFinite(qr) && Number.isFinite(qd) && qr >= 0 && qr < 360 && Math.abs(qd) <= 90) { ra.value = qr.toFixed(4); dec.value = qd.toFixed(4); run(qr, qd); } else ra.focus();
+})();
+</script>
+</body>
+</html>

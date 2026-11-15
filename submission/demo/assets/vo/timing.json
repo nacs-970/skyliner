@@ -1,0 +1,56 @@
+{
+ "voice": "juno",
+ "seed": 0,
+ "total": 24.0,
+ "speech_end": 22.636,
+ "lines": [
+  {
+   "n": 1,
+   "scene": "title",
+   "say": "Skyliner, by team FixThisNoMistake.",
+   "caption": "Skyliner, by team FixThisNoMistake.",
+   "seconds": 2.256,
+   "start": 0.35
+  },
+  {
+   "n": 2,
+   "scene": "problem",
+   "say": "SPHEREx maps the whole sky every six months. Moving objects show up when you compare images over time.",
+   "caption": "SPHEREx maps the whole sky every six months. Moving objects show up when you compare images over time.",
+   "seconds": 6.762,
+   "start": 2.756
+  },
+  {
+   "n": 3,
+   "scene": "enter",
+   "say": "Type any position.",
+   "caption": "Type any position.",
+   "seconds": 1.246,
+   "start": 9.668
+  },
+  {
+   "n": 4,
+   "scene": "play",
+   "say": "Skyliner fetches real NASA images and plays them in time order, like a short video.",
+   "caption": "Skyliner fetches real NASA images and plays them in time order, like a short video.",
+   "seconds": 5.397,
+   "start": 11.064
+  },
+  {
+   "n": 5,
+   "scene": "gaps",
+   "say": "The gaps are real. You decide what moves.",
+   "caption": "The gaps are real. You decide what moves.",
+   "seconds": 2.952,
+   "start": 16.611
+  },
+  {
+   "n": 6,
+   "scene": "end",
+   "say": "Public NASA data. Open tools.",
+   "caption": "Public NASA data. Open tools.",
+   "seconds": 2.923,
+   "start": 19.713
+  }
+ ]
+}

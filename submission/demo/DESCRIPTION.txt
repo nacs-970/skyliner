@@ -1,0 +1,17 @@
+Skyliner: demo video (about 24 seconds)
+
+Skyliner plays real NASA SPHEREx infrared images of one patch of sky in time order, like a short video, so a person can look for objects that move. It is a viewer: it does not detect or name moving objects.
+
+Team FixThisNoMistake. NASA Space Apps Challenge 2026, Challenge 12: Planet X and SPHEREx (Universal Event).
+Project link: https://github.com/nacs-970/skyliner
+
+CREDITS AND LABELS
+- Voice: Underdog Woof (underdog.ai). The speech is SI-generated.
+- Video: SI-generated motion graphic made with HTML and CSS by Claude Sonnet 5.5 (Anthropic) through Claude Code. The video carries a visible "SI-generated video and voice" label.
+- Pictures: real screenshots of the Skyliner app and real SPHEREx frames of Barnard's Star (detector D6).
+- Fonts: Geist and Geist Mono (SIL Open Font License 1.1).
+- This video is not monetized.
+
+DATA ACKNOWLEDGEMENTS
+This publication makes use of data products from the Spectro-Photometer for the History of the Universe, Epoch of Reionization and Ices Explorer (SPHEREx), which is a joint project of the Jet Propulsion Laboratory and the California Institute of Technology, and is funded by the National Aeronautics and Space Administration.
+This research has made use of the NASA/IPAC Infrared Science Archive, which is funded by the National Aeronautics and Space Administration and operated by the California Institute of Technology.

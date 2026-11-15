@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skyliner demo video (motion graphic, 24 s)</title>
+<meta name="description" content="A 24 second motion-graphic demo of Skyliner, made with HTML and CSS. SI-generated video. Voice: Underdog Woof.">
+<!--
+  Skyliner demo: a 24 second motion graphic, written in plain HTML, CSS and JavaScript (no libraries). Open this page and press Play:
+  the voice-over (Underdog Woof, SI-generated speech) is the clock, and every scene moves to it. The same page is what
+  build/render.js steps through, frame by frame, to make skyliner-demo.mp4 (see README.md).
+  SI-GENERATED CODE AND VIDEO: written by Claude Sonnet 5.5 (Anthropic) through Claude Code on 2026-11-15. See docs/si-log.md.
+  The pictures are real: screenshots of the real app and the real SPHEREx frames of Barnard's Star (NASA SPHEREx data via IRSA,
+  detector D6) in assets/real/. Voice: Underdog Woof (underdog.ai), SI-generated speech, credit required by its license.
+  Third-party items: Geist and Geist Mono fonts (SIL Open Font License, assets/fonts/), Underdog Woof voice. See docs/references.md.
+-->
+<style>
+  @font-face { font-family: "Geist"; src: url("assets/fonts/geist-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+  @font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+  :root { --bg: #0b0c10; --panel: #14161b; --line: #353a45; --text: #f4f4f2; --muted: #a3a6b0; --accent: #6ea2f0; --warm: #f0b86e; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #050608; color: var(--text); font-family: "Geist", system-ui, sans-serif; overflow: hidden; }
+  #viewport { position: fixed; inset: 0; display: grid; place-items: center; }
+  #stage { position: relative; width: 1280px; height: 720px; flex: none; overflow: hidden; background: radial-gradient(1100px 620px at 50% 38%, #151922 0%, var(--bg) 62%, #07080b 100%); transform-origin: center center; }
+  .abs { position: absolute; }
+  .scene { position: absolute; inset: 0; opacity: 0; }
+  .star { position: absolute; border-radius: 50%; background: #dfe6f5; }
+  .chip { position: absolute; display: inline-flex; align-items: center; padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px; background: rgba(20, 22, 27, .86); color: var(--text); font-size: 20px; white-space: nowrap; }
+  .chip.mono { font-family: "Geist Mono", monospace; font-size: 17px; color: var(--muted); }
+  .chip.acc { border-color: var(--accent); color: var(--accent); }
+  .mono { font-family: "Geist Mono", monospace; }
+  h1, h2, p { margin: 0; }
+  .center { left: 0; width: 1280px; text-align: center; }
+
+  /* title */
+  #s1 h1 { font-size: 176px; line-height: 1; font-weight: 700; letter-spacing: -.045em; }
+  #s1 .rule { height: 6px; width: 560px; background: var(--accent); border-radius: 3px; transform-origin: left center; left: 360px; }
+  #s1 .team { font-size: 38px; font-weight: 500; }
+  #s1 .team b { color: var(--accent); font-weight: 600; }
+
+  /* problem */
+  #s2 h2 { font-size: 54px; font-weight: 700; letter-spacing: -.03em; line-height: 1.04; }
+  .panel { position: absolute; width: 270px; height: 270px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #000; }
+  .panel img { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+  .plabel { position: absolute; width: 270px; text-align: center; font-size: 19px; color: var(--muted); }
+  .plabel b { display: block; color: var(--text); font-size: 24px; font-weight: 600; }
+  .ring { position: absolute; width: 74px; height: 74px; margin: -37px 0 0 -37px; border: 2px solid var(--warm); border-radius: 50%; }
+  .tline { height: 3px; background: linear-gradient(90deg, var(--line), var(--accent)); transform-origin: left center; border-radius: 2px; }
+  .tarrow { width: 0; height: 0; border-left: 16px solid var(--accent); border-top: 9px solid transparent; border-bottom: 9px solid transparent; }
+
+  /* browser frame (the landing page) */
+  .browser { position: absolute; width: 760px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #0b0c10; box-shadow: 0 30px 80px rgba(0, 0, 0, .55); }
+  .browser .bar { height: 30px; background: #1a1d24; display: flex; gap: 8px; align-items: center; padding: 0 14px; }
+  .browser .bar i { width: 10px; height: 10px; border-radius: 50%; background: #3a3f4b; display: block; }
+  .browser .shots { position: relative; width: 758px; height: 473px; overflow: hidden; }
+  .browser .shots img { position: absolute; left: 0; top: 0; width: 758px; height: 473.75px; display: block; }
+  .zoomwrap { position: absolute; inset: 0; transform-origin: 50% 46%; }
+  .hl { position: absolute; border: 2px solid var(--accent); border-radius: 8px; box-shadow: 0 0 0 6px rgba(110, 162, 240, .18); }
+
+  /* progress */
+  .cardcrop { position: absolute; width: 600px; height: 340px; background: url("assets/real/progress.png") -420px -284px / 1440px 900px no-repeat; border: 1px solid var(--line); border-radius: 12px; transform-origin: center; box-shadow: 0 30px 80px rgba(0, 0, 0, .55); }
+  .big { font-size: 120px; font-weight: 700; letter-spacing: -.04em; line-height: 1; }
+  .big small { font-size: 40px; color: var(--muted); font-weight: 500; letter-spacing: 0; }
+
+  /* flipbook */
+  #flip { position: absolute; left: 90px; top: 84px; width: 330px; height: 330px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #000; }
+  #flip img { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; display: none; }
+  #flip img.on { display: block; }
+  .tag { position: absolute; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: rgba(11, 12, 16, .85); font-family: "Geist Mono", monospace; font-size: 14px; }
+  #readout .n { font-size: 64px; font-weight: 700; letter-spacing: -.03em; line-height: 1.05; }
+  #readout .n span { color: var(--muted); font-weight: 500; }
+  #readout .d { font-family: "Geist Mono", monospace; font-size: 30px; margin-top: 8px; }
+  #readout .w { font-family: "Geist Mono", monospace; font-size: 20px; color: var(--muted); margin-top: 6px; }
+  #tl { position: absolute; left: 70px; top: 452px; width: 1140px; height: 100px; }
+  #tl .axis { position: absolute; left: 0; right: 0; top: 52px; height: 1px; background: var(--line); }
+  #tl .mon { position: absolute; top: 0; font-family: "Geist Mono", monospace; font-size: 14px; color: var(--muted); transform: translateX(-50%); }
+  #tl .mtick { position: absolute; top: 20px; width: 1px; height: 12px; background: var(--line); }
+  #tl .win { position: absolute; top: 36px; height: 32px; border-radius: 6px; background: rgba(110, 162, 240, .14); border: 1px solid rgba(110, 162, 240, .45); }
+  #tl .tk { position: absolute; top: 40px; width: 2px; height: 24px; background: #4b5163; border-radius: 1px; }
+  #tl .tk.on { background: var(--accent); }
+  #tl .head { position: absolute; top: 24px; width: 2px; height: 56px; background: var(--warm); box-shadow: 0 0 12px rgba(240, 184, 110, .7); }
+  #tl .gap { position: absolute; top: 36px; height: 32px; border-top: 1px dashed #5b6173; border-bottom: 1px dashed #5b6173; opacity: .6; }
+  #tl .gapl { position: absolute; top: 74px; font-family: "Geist Mono", monospace; font-size: 17px; color: var(--muted); transform: translateX(-50%); white-space: nowrap; padding: 3px 10px; border: 1px solid transparent; border-radius: 999px; }
+
+  /* end */
+  #s6 h1 { font-size: 150px; line-height: 1; font-weight: 700; letter-spacing: -.045em; }
+  #s6 .tag2 { font-size: 46px; font-weight: 500; }
+  #s6 .cred { font-size: 19px; color: var(--muted); line-height: 1.55; }
+  #s6 .cred b { color: var(--text); font-weight: 600; }
+
+  /* always on */
+  #brand { position: absolute; left: 34px; top: 24px; font-size: 24px; font-weight: 700; letter-spacing: -.02em; opacity: 0; }
+  #brand small { font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--muted); margin-left: 8px; }
+  #event { position: absolute; right: 34px; top: 30px; font-size: 16px; color: var(--muted); opacity: 0; }
+  .cap { position: absolute; left: 0; width: 1280px; bottom: 56px; text-align: center; opacity: 0; }
+  .cap span { display: inline-block; max-width: 1040px; padding: 10px 22px; border-radius: 10px; background: rgba(5, 6, 8, .78); font-size: 29px; font-weight: 500; line-height: 1.28; }
+  #wm { position: absolute; right: 26px; bottom: 14px; font-family: "Geist Mono", monospace; font-size: 14px; color: #d9dbe3; padding: 4px 11px; border: 1px solid #5b6173; border-radius: 999px; background: rgba(5, 6, 8, .8); }
+  #bar { position: absolute; left: 0; bottom: 0; height: 4px; width: 1280px; background: var(--accent); transform-origin: left center; transform: scaleX(0); }
+
+  /* controls (not in the video) */
+  #ctl { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; gap: 10px; z-index: 5; }
+  #ctl button { font: 600 15px "Geist", sans-serif; padding: 10px 18px; border-radius: 8px; border: 1px solid #3b4150; background: #14161b; color: #f4f4f2; cursor: pointer; }
+  #ctl button.primary { background: var(--accent); border-color: var(--accent); color: #0b0c10; }
+  body.render #ctl { display: none; }
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+
+  <div id="stars"></div>
+
+  <!-- 1 title -->
+  <section class="scene" id="s1">
+    <div class="abs center" id="s1a" style="top: 150px"><span class="chip mono" style="position: static">NASA Space Apps Challenge 2026</span></div>
+    <h1 class="abs center" id="s1b" style="top: 205px">Skyliner</h1>
+    <div class="abs rule" id="s1c" style="top: 400px"></div>
+    <p class="abs center team" id="s1d" style="top: 436px">Team <b>FixThisNoMistake</b></p>
+    <div class="abs center" id="s1e" style="top: 520px"><span class="chip acc" style="position: static">Challenge 12: Planet X and SPHEREx</span></div>
+  </section>
+
+  <!-- 2 problem -->
+  <section class="scene" id="s2">
+    <h2 class="abs" id="s2a" style="left: 80px; top: 78px; white-space: nowrap">The whole sky, every six months</h2>
+    <div class="chip" id="s2b1" style="left: 80px; top: 166px">102 infrared bands</div>
+    <div class="chip mono" id="s2b2" style="left: 330px; top: 166px">0.75 to 5.0 micrometres</div>
+    <div class="panel" id="p1" style="left: 150px; top: 250px"><img id="p1i" alt=""><div class="ring" id="p1r" style="left: 135px; top: 135px"></div></div>
+    <div class="plabel" id="p1l" style="left: 150px; top: 528px"><b>15 Aug 2025</b></div>
+    <div class="panel" id="p2" style="left: 860px; top: 250px"><img id="p2i" alt=""><div class="ring" id="p2r" style="left: 135px; top: 135px"></div></div>
+    <div class="plabel" id="p2l" style="left: 860px; top: 528px"><b>5 May 2026</b></div>
+    <div class="abs tline" id="s2t" style="left: 450px; top: 385px; width: 380px"></div>
+    <div class="abs tarrow" id="s2h" style="left: 830px; top: 376px"></div>
+    <div class="abs center mono" id="s2d" style="left: 450px; width: 380px; top: 338px; font-size: 24px; color: var(--text)">262 days later</div>
+    <div class="abs center" id="s2e" style="left: 450px; width: 380px; top: 408px; font-size: 19px; line-height: 1.45; color: var(--muted)">same patch of sky<br>Barnard's Star, detector D6<br>real SPHEREx data</div>
+  </section>
+
+  <!-- 3 enter a position (the real landing page) -->
+  <section class="scene" id="s3">
+    <div class="browser" id="b1" style="left: 260px; top: 96px">
+      <div class="bar"><i></i><i></i><i></i></div>
+      <div class="shots"><div class="zoomwrap" id="zw">
+        <img id="lb" src="assets/real/landing-blank.png" alt="The Skyliner landing page, blank">
+        <img id="lt" src="assets/real/landing-typed.png" alt="The Skyliner landing page with RA 269.4463 and Dec 4.7675 typed in" style="opacity: 0">
+        <div class="hl" id="hl" style="left: 227px; top: 168px; width: 304px; height: 25px; opacity: 0"></div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 4 fetch (the real progress card) -->
+  <section class="scene" id="s4">
+    <div class="cardcrop" id="cc" style="left: 70px; top: 150px"></div>
+    <div class="abs" id="s4n" style="left: 740px; top: 150px">
+      <div class="mono" style="font-size: 18px; color: var(--muted)">an example run</div>
+      <div class="big" id="cnt">0<small> of 44 images</small></div>
+      <div style="font-size: 24px; margin-top: 10px">read from NASA's public archive</div>
+      <div class="mono" style="font-size: 18px; color: var(--warm); margin-top: 10px">8.5 minutes, shown sped up</div>
+    </div>
+  </section>
+
+  <!-- 5 the flipbook, with the real timeline -->
+  <section class="scene" id="s5">
+    <div id="flip"></div>
+    <div class="tag" id="fl1" style="left: 100px; top: 94px">Real SPHEREx data</div>
+    <div class="abs" id="fl2" style="left: 90px; top: 422px; font-size: 16px; color: var(--muted)"></div>
+    <div class="abs" id="readout" style="left: 500px; top: 80px">
+      <div class="n" id="rn">Frame 1 <span>of 39</span></div>
+      <div class="d" id="rd">2025-08-15</div>
+      <div class="w" id="rw"></div>
+    </div>
+    <div class="abs" id="s5x" style="left: 500px; top: 262px; width: 720px; font-size: 24px; line-height: 1.35">Time runs left to right.<br><span style="color: var(--muted)">Every tick below is one real image. Nothing is added to fill a gap.</span></div>
+    <div id="tl"></div>
+    <div class="abs" id="s5y" style="left: 500px; top: 368px; font-size: 26px; font-weight: 600; color: var(--warm)">Viewer only: you decide what moves.</div>
+  </section>
+
+  <!-- 6 end -->
+  <section class="scene" id="s6">
+    <h1 class="abs center" id="s6a" style="top: 108px">Skyliner</h1>
+    <p class="abs center tag2" id="s6b" style="top: 292px">Public NASA data. Open tools.</p>
+    <div class="abs center cred" id="s6c" style="top: 400px">
+      Team <b>FixThisNoMistake</b> | NASA Space Apps Challenge 2026 | Challenge 12: Planet X and SPHEREx<br>
+      Images: <b>NASA SPHEREx</b> data from the NASA/IPAC Infrared Science Archive (IRSA) | Open source, MIT license<br>
+      Voice: <b>Underdog Woof</b> (underdog.ai), SI-generated speech<br>
+      This video was made with SI assistance (Claude Sonnet 5.5 through Claude Code)
+    </div>
+  </section>
+
+  <div id="brand">Skyliner<small>SPHEREx</small></div>
+  <div id="event">NASA Space Apps Challenge 2026</div>
+  <div id="caps"></div>
+  <div id="wm">SI-generated video and voice</div>
+  <div id="bar"></div>
+</div></div>
+
+<div id="ctl"><button class="primary" id="bplay">Play with sound</button><button id="bsilent">Play without sound</button></div>
+<audio id="vo" src="assets/vo/vo-full.wav" preload="auto"></audio>
+
+<script src="assets/vo/timing.js"></script>
+<script src="assets/real/frames.js"></script>
+<script>
+(() => {
+  'use strict';
+  const T = window.VO_TIMING, R = window.REAL, L = T.lines, TOTAL = T.total;
+  const $ = (s) => document.querySelector(s);
+  const anims = [], updates = [];
+  const EASE = 'cubic-bezier(.2,.7,.2,1)';
+  /* one animation per element: keys are [time in seconds, css properties]; everything is paused and driven by seek(t) */
+  function K(el, keys, easing = EASE) {
+    const t0 = keys[0][0], t1 = keys[keys.length - 1][0];
+    const kf = keys.map(([t, p]) => Object.assign({ offset: t1 === t0 ? 0 : (t - t0) / (t1 - t0), easing }, p));
+    const a = el.animate(kf, { delay: t0 * 1000, duration: Math.max(1, (t1 - t0) * 1000), fill: 'both' });
+    a.pause(); anims.push(a); return a;
+  }
+  const win = (el, t0, t1, f = 0.3) => K(el, [[t0, { opacity: 0 }], [t0 + f, { opacity: 1 }], [t1 - f, { opacity: 1 }], [t1, { opacity: 0 }]], 'linear');
+  const pop = (el, t, d = 0.55, dy = 22) => K(el, [[t, { opacity: 0, transform: `translateY(${dy}px)` }], [t + d, { opacity: 1, transform: 'translateY(0px)' }]]);
+  const fade = (el, t, d = 0.4) => K(el, [[t, { opacity: 0 }], [t + d, { opacity: 1 }]], 'linear');
+  const S = L.map((l) => l.start), D = L.map((l) => l.seconds);
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const dmy = (m) => { const d = new Date((m - 40587) * 864e5); return d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()] + ' ' + d.getUTCFullYear(); };
+
+  /* stars: a seeded handful of dots that drift slowly all through the video */
+  let seed = 7; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  const stars = $('#stars');
+  for (let i = 0; i < 90; i++) {
+    const s = document.createElement('i'); s.className = 'star';
+    const z = rnd(), px = 1 + z * 2.2;
+    s.style.cssText = `left:${(rnd() * 1280).toFixed(0)}px;top:${(rnd() * 760).toFixed(0)}px;width:${px.toFixed(1)}px;height:${px.toFixed(1)}px;opacity:${(0.12 + z * 0.4).toFixed(2)}`;
+    stars.appendChild(s);
+  }
+  K(stars, [[0, { transform: 'translateY(0px)' }], [TOTAL, { transform: 'translateY(-46px)' }]], 'linear');
+
+  /* captions: the words of the voice-over, one block per sentence */
+  const caps = $('#caps');
+  L.forEach((l, i) => {
+    const c = document.createElement('div'); c.className = 'cap'; c.innerHTML = '<span></span>'; c.firstChild.textContent = l.caption;
+    caps.appendChild(c); win(c, l.start - 0.05, l.start + l.seconds + 0.18, 0.18);
+  });
+
+  /* always on */
+  K($('#brand'), [[S[1] - 0.27, { opacity: 0 }], [S[1] + 0.23, { opacity: 1 }]], 'linear');
+  K($('#event'), [[S[1] - 0.27, { opacity: 0 }], [S[1] + 0.23, { opacity: 1 }]], 'linear');
+  K($('#bar'), [[0, { transform: 'scaleX(0)' }], [TOTAL, { transform: 'scaleX(1)' }]], 'linear');
+
+  /* scene 1: title (voice line 1) */
+  win($('#s1'), 0, S[1] - 0.1, 0.35);
+  const f1 = Math.min(1, (S[1] - 0.5) / 2.45); // the offsets below were laid out for a 4.3 s title; squeeze them when the voice says line 1 faster
+  fade($('#s1a'), 0.2 * f1); pop($('#s1b'), 0.35 * f1, 0.7 * f1, 40);
+  K($('#s1c'), [[0.9 * f1, { opacity: 1, transform: 'scaleX(0)' }], [1.7 * f1, { opacity: 1, transform: 'scaleX(1)' }]]);
+  pop($('#s1d'), 1.3 * f1, 0.55 * f1); pop($('#s1e'), 1.9 * f1, 0.55 * f1);
+
+  /* scene 2: the problem (voice line 2) */
+  const t2 = S[1], t2e = S[2] - 0.1;
+  win($('#s2'), t2 - 0.05, t2e, 0.35);
+  const f2 = Math.min(1, (t2e - t2 - 0.5) / 7.0), o2 = (x) => t2 + x * f2; // offsets laid out for an 8.3 s sentence; squeezed when line 2 is shorter
+  pop($('#s2a'), o2(0.15)); pop($('#s2b1'), o2(0.9), 0.5, 14); pop($('#s2b2'), o2(1.4), 0.5, 14);
+  const first = R.frames[0], last = R.frames[R.frames.length - 1];
+  const fb = R.frames[R.n - 2]; // frame 38: the last frame (39) carries a diagonal streak that could be mistaken for a detection
+  $('#p1i').src = 'assets/real/frames/01.png'; $('#p2i').src = 'assets/real/frames/' + String(R.n - 1).padStart(2, '0') + '.png';
+  $('#p1l').innerHTML = '<b>' + dmy(first.mjd) + '</b>'; $('#p2l').innerHTML = '<b>' + dmy(fb.mjd) + '</b>';
+  $('#s2d').textContent = Math.round(fb.mjd - first.mjd) + ' days later';
+  K($('#p1'), [[o2(2.4), { opacity: 0, transform: 'translateX(-60px)' }], [o2(3.1), { opacity: 1, transform: 'translateX(0px)' }]]);
+  K($('#p1l'), [[o2(2.8), { opacity: 0 }], [o2(3.3), { opacity: 1 }]], 'linear');
+  K($('#p2'), [[o2(3.6), { opacity: 0, transform: 'translateX(60px)' }], [o2(4.3), { opacity: 1, transform: 'translateX(0px)' }]]);
+  K($('#p2l'), [[o2(4.0), { opacity: 0 }], [o2(4.5), { opacity: 1 }]], 'linear');
+  K($('#s2t'), [[o2(4.5), { opacity: 1, transform: 'scaleX(0)' }], [o2(5.3), { opacity: 1, transform: 'scaleX(1)' }]]);
+  K($('#s2h'), [[o2(5.2), { opacity: 0 }], [o2(5.4), { opacity: 1 }]], 'linear');
+  K($('#s2d'), [[o2(5.0), { opacity: 0 }], [o2(5.6), { opacity: 1 }]], 'linear');
+  K($('#s2e'), [[o2(6.0), { opacity: 0 }], [o2(6.6), { opacity: 1 }]], 'linear');
+  for (const id of ['#p1r', '#p2r']) K($(id), [[o2(6.4), { opacity: 0, transform: 'scale(1.8)' }], [o2(7.0), { opacity: 1, transform: 'scale(1)' }]]);
+
+  /* scene 3: type a position (voice line 3, and the start of line 4) */
+  const t3 = S[2], t3e = S[3] + 0.3;
+  win($('#s3'), t3 - 0.05, t3e, 0.3);
+  const f3 = Math.min(1, (t3e - t3 - 0.45) / 1.9), o3 = (x) => t3 + x * f3; // offsets laid out for a 1.7 s sentence plus 0.3 s; squeezed when line 3 is shorter
+  K($('#b1'), [[t3 - 0.05, { transform: 'translateY(40px) scale(.96)' }], [o3(0.6), { transform: 'translateY(0px) scale(1)' }]]);
+  K($('#lt'), [[o3(0.55), { opacity: 0 }], [o3(1.0), { opacity: 1 }]], 'linear');
+  K($('#hl'), [[o3(0.9), { opacity: 0 }], [o3(1.2), { opacity: 1 }]], 'linear');
+  K($('#zw'), [[o3(1.0), { transform: 'scale(1)' }], [o3(1.9), { transform: 'scale(1.55)' }]]);
+
+  /* scene 4: fetch (first half of voice line 4) */
+  const t4 = S[3] + 0.15, t4e = S[3] + 2.8;
+  win($('#s4'), t4, t4e, 0.3);
+  K($('#cc'), [[t4, { transform: 'scale(.92)' }], [t4 + 0.7, { transform: 'scale(1)' }]]);
+  K($('#s4n'), [[t4 + 0.2, { opacity: 0, transform: 'translateX(40px)' }], [t4 + 0.8, { opacity: 1, transform: 'translateX(0px)' }]]);
+  updates.push((t) => { const k = Math.round(44 * Math.min(1, Math.max(0, (t - t4 - 0.3) / (t4e - t4 - 0.7)))); $('#cnt').firstChild.textContent = String(k); });
+
+  /* scene 5: the flipbook and the real timeline (second half of voice line 4, and line 5) */
+  const t5 = S[3] + 2.5, t5e = S[5] - 0.1;
+  win($('#s5'), t5, t5e, 0.35);
+  const flip = $('#flip');
+  const imgs = [];
+  for (let n = 1; n <= R.n; n++) { const im = document.createElement('img'); im.src = 'assets/real/frames/' + String(n).padStart(2, '0') + '.png'; im.alt = ''; flip.appendChild(im); imgs.push(im); }
+  $('#fl2').innerHTML = "Barnard's Star, detector D6, " + R.wave_range_um[0].toFixed(1) + ' to ' + R.wave_range_um[1].toFixed(1) + ' micrometres';
+  K(flip, [[t5, { transform: 'scale(.95)' }], [t5 + 0.6, { transform: 'scale(1)' }]]);
+  K($('#readout'), [[t5 + 0.2, { opacity: 0, transform: 'translateX(30px)' }], [t5 + 0.8, { opacity: 1, transform: 'translateX(0px)' }]]);
+  pop($('#s5x'), t5 + 1.2, 0.6, 14);
+  K($('#tl'), [[t5 + 0.3, { opacity: 0, transform: 'translateY(20px)' }], [t5 + 0.9, { opacity: 1, transform: 'translateY(0px)' }]]);
+  pop($('#s5y'), S[4] + Math.min(2.2, D[4] * 0.5), 0.6, 14);
+
+  /* the time axis of the real frames: three observing windows and the gaps between them */
+  const tl = $('#tl'), W = 1140;
+  const m0 = Math.floor(first.mjd) - 8, m1 = Math.ceil(last.mjd) + 8, X = (m) => ((m - m0) / (m1 - m0)) * W;
+  const mk = (cls, css, txt) => { const e = document.createElement('div'); e.className = cls; e.style.cssText = css; if (txt) e.textContent = txt; tl.appendChild(e); return e; };
+  mk('axis', '');
+  for (let y = 2025, mo = 8; ; mo++) {
+    if (mo > 11) { mo = 0; y++; }
+    const m = Date.UTC(y, mo, 1) / 864e5 + 40587; if (m > m1) break; if (m < m0) continue;
+    mk('mtick', `left:${X(m)}px`); mk('mon', `left:${X(m)}px`, MONTHS[mo] + (mo === 0 || (y === 2025 && mo === 8) ? ' ' + y : ''));
+  }
+  const groups = []; R.frames.forEach((f, i) => { if (i === 0 || f.mjd - R.frames[i - 1].mjd > 20) groups.push([]); groups[groups.length - 1].push(i); });
+  const ticks = [];
+  groups.forEach((g) => { const a = X(R.frames[g[0]].mjd), b = X(R.frames[g[g.length - 1]].mjd); mk('win', `left:${a - 4}px;width:${Math.max(10, b - a + 8)}px`); });
+  R.frames.forEach((f) => ticks.push(mk('tk', `left:${X(f.mjd) - 1}px`)));
+  const gapEls = [];
+  groups.slice(1).forEach((g, k) => {
+    const pa = R.frames[groups[k][groups[k].length - 1]].mjd, pb = R.frames[g[0]].mjd, days = Math.round(pb - pa);
+    const gp = mk('gap', `left:${X(pa) + 6}px;width:${X(pb) - X(pa) - 12}px`);
+    const gl = mk('gapl', `left:${(X(pa) + X(pb)) / 2}px`, days + ' days with no image');
+    gapEls.push([gp, gl, days]);
+  });
+  const head = mk('head', 'left:0px');
+  const date = (m) => new Date((m - 40587) * 864e5).toISOString().slice(0, 10);
+  $('#rw').textContent = 'wavelength at the target: ' + first.wave.toFixed(2) + ' micrometres';
+  /* two passes through the real frames: the first while "plays them in time order" is spoken, the second slowly under "the gaps are real" */
+  const P1s = S[3] + 2.9, P2s = S[4] + 0.2; // each pass must finish before the next one starts (pass 1) or before the scene fades (pass 2), however fast the voice speaks
+  const P1 = [P1s, Math.min(0.095, (S[4] - 0.05 - P1s) / R.n)], P2 = [P2s, Math.min(0.088, (S[5] - 0.45 - P2s) / R.n)];
+  const frameAt = (t) => { if (t >= P2[0]) return Math.min(R.n - 1, Math.floor((t - P2[0]) / P2[1])); if (t >= P1[0]) return Math.min(R.n - 1, Math.floor((t - P1[0]) / P1[1])); return 0; };
+  updates.push((t) => {
+    const i = frameAt(t), f = R.frames[i];
+    imgs.forEach((im, k) => im.classList.toggle('on', k === i));
+    ticks.forEach((tk, k) => tk.classList.toggle('on', k <= i));
+    head.style.left = (X(f.mjd) - 1) + 'px';
+    $('#rn').innerHTML = 'Frame ' + (i + 1) + ' <span>of ' + R.n + '</span>';
+    $('#rd').textContent = date(f.mjd);
+    $('#rw').textContent = 'wavelength at the target: ' + f.wave.toFixed(2) + ' micrometres';
+    const g = Math.min(1, Math.max(0, (t - (S[4] - 0.1)) / 0.5)); // the gap labels light up with "the gaps are real"
+    gapEls.forEach(([gp, gl]) => { gp.style.opacity = String(0.6 + 0.4 * g); gp.style.borderColor = g > 0.5 ? 'var(--warm)' : '#5b6173'; gl.style.color = g > 0.5 ? 'var(--warm)' : 'var(--muted)'; gl.style.borderColor = g > 0.5 ? 'var(--warm)' : 'transparent'; });
+  });
+
+  /* scene 6: end card (voice line 6) */
+  const t6 = S[5] - 0.2;
+  win($('#s6'), t6, TOTAL + 0.5, 0.4);
+  pop($('#s6a'), t6 + 0.25, 0.7, 36); pop($('#s6b'), t6 + 0.8, 0.6, 20); pop($('#s6c'), t6 + 1.6, 0.8, 14);
+
+  /* seek: the whole video as a function of the time t (seconds) */
+  const seek = (t) => { t = Math.max(0, Math.min(TOTAL, t)); for (const a of anims) a.currentTime = t * 1000; for (const u of updates) u(t); return t; };
+  window.seek = seek; window.TOTAL = TOTAL;
+  seek(0);
+  const imgsAll = [...document.images];
+  window.READY = Promise.all([document.fonts.ready, ...imgsAll.map((i) => (i.decode ? i.decode().catch(() => {}) : Promise.resolve()))]);
+
+  /* fit the stage to the window; in render mode (?render=1) it stays 1280 by 720 */
+  const q = new URLSearchParams(location.search);
+  if (q.has('render')) document.body.classList.add('render');
+  const fit = () => { if (q.has('render')) return; const s = Math.min(innerWidth / 1280, (innerHeight - 70) / 720); $('#stage').style.transform = `scale(${s})`; $('#viewport').style.paddingBottom = '70px'; };
+  addEventListener('resize', fit); fit();
+
+  /* playback: the voice-over is the clock (or the browser clock when it is played without sound) */
+  const vo = $('#vo'); let raf = 0, clockStart = 0, silent = false;
+  const now = () => (silent ? (performance.now() - clockStart) / 1000 : vo.currentTime);
+  function loop() { const t = seek(now()); if (t >= TOTAL - 0.02 || (!silent && vo.ended)) { $('#bplay').textContent = 'Replay with sound'; $('#ctl').style.display = 'flex'; return; } raf = requestAnimationFrame(loop); }
+  function start(withSound) {
+    cancelAnimationFrame(raf); silent = !withSound; $('#ctl').style.display = 'none';
+    if (withSound) { vo.currentTime = 0; vo.play().catch(() => { silent = true; clockStart = performance.now(); }); } else { vo.pause(); clockStart = performance.now(); }
+    raf = requestAnimationFrame(loop);
+  }
+  $('#bplay').addEventListener('click', () => start(true));
+  $('#bsilent').addEventListener('click', () => start(false));
+  if (q.has('t')) seek(parseFloat(q.get('t'))); // ?t=12.5 shows one moment of the video
+})();
+</script>
+</body>
+</html>

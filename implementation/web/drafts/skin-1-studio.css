@@ -1,0 +1,14 @@
+/* Skin 1 "Studio": graphite panels, one electric-blue accent, Geist, 6px corners (chips are pills). The base tokens are the dark set.
+   Generated with SI assistance (Claude Sonnet 5.5, 2026-11-14); see docs/si-log.md. */
+
+:root:has(#t-light:checked) {
+  --bg: #e8e9ec; --panel: #f6f7f9; --panel2: #fcfcfd; --stage: #dfe1e5;
+  --line: #cdd0d6; --line2: #e0e2e6; --field: #fcfcfd; --hover: rgba(0, 0, 0, .06);
+  --text: #17181b; --muted: #5b606b; --accent: #1f5fcf; --accent-ink: #fcfcfd;
+  --clip: #55607a; --clip-line: #3f4960; --clip-tick: rgba(255, 255, 255, .28);
+  --range: rgba(31, 95, 207, .12); --ruler: #eceef1;
+  --d1: #3f7fe0; --d2: #1fa597; --d3: #4fa860; --d4: #b89418; --d5: #d9702a; --d6: #cf4a3a;
+}
+
+.tl-labels > div:nth-child(odd):not(.corner) { background: var(--hover); }
+.track:nth-of-type(even) { background: var(--hover); }

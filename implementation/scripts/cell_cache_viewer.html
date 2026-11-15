@@ -1,0 +1,242 @@
+<!doctype html>
+<!-- SI-GENERATED CODE: written by Claude Sonnet 5.5 (Anthropic) through Claude Code on 2026-11-14.
+     Template for the cell-cache demo viewer. cell_cache_demo.py `view` fills in the DATA marker below and writes a
+     standalone page. See docs/si-log.md. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cell cache viewer</title>
+<style>
+  :root { --bg:#0e1116; --fg:#e6e9ef; --mut:#8b93a1; --line:#2a303b; --card:#161b22; --acc:#6cb6ff; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--fg); font:14px/1.45 system-ui, sans-serif; }
+  h1 { font-size:18px; margin:0 0 4px; }
+  .note { color:var(--mut); max-width:900px; margin:0 0 12px; }
+  .bar { display:flex; flex-wrap:wrap; gap:12px 20px; align-items:center; margin:12px 0; }
+  .bar label { color:var(--mut); }
+  .panels { display:flex; flex-wrap:wrap; gap:16px; }
+  .panel { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px; }
+  .panel select { background:var(--bg); color:var(--fg); border:1px solid var(--line); border-radius:4px; padding:3px 6px; }
+  .wrap { position:relative; margin-top:8px; width:340px; max-width:100%; }
+  .wrap canvas { margin-top:0; }
+  .wrap canvas.ov { position:absolute; left:0; top:0; width:100%; height:100%; pointer-events:none; image-rendering:auto; background:none; }
+  canvas { display:block; margin-top:8px; image-rendering:pixelated; width:432px; height:432px; max-width:100%; height:auto; aspect-ratio:1; background:#000; }
+  .read { color:var(--mut); font-variant-numeric:tabular-nums; min-height:1.4em; margin-top:6px; }
+  button { background:var(--card); color:var(--fg); border:1px solid var(--line); border-radius:4px; padding:4px 12px; cursor:pointer; }
+  button:hover { border-color:var(--acc); }
+  input[type=range] { accent-color:var(--acc); }
+  #frameSlider { width:min(420px, 80vw); }
+  .stats { color:var(--mut); margin-top:8px; }
+  .scale { display:flex; align-items:center; gap:8px; margin-top:6px; color:var(--mut); font-size:12px; }
+  .scale canvas { margin:0; width:160px; height:10px; aspect-ratio:auto; }
+</style>
+</head>
+<body>
+<noscript><p style="color:#ff8080">This page needs JavaScript. Open it in a normal browser tab (Chrome or Firefox), not in a preview pane that blocks scripts.</p></noscript>
+<p id="err" style="color:#ff8080;display:none"></p>
+<h1>Cell cache viewer: WISE 0855, SPHEREx DR1 cutouts</h1>
+<p class="note">Real SPHEREx cutouts (NASA/IPAC IRSA), put on one pixel grid. "Stored" is what the lossy cell cache gives back,
+  not the original. The cache drops frame noise in cells that look unchanged and rounds the rest, so use the original
+  for any measurement. Frames are in time order. The wavelength at the target is in the label: it changes a little from frame to frame (and a lot if frames come from different detectors), so some brightness change between frames is expected.</p>
+
+<div class="bar">
+  <button id="play">Play</button>
+  <button id="prev">&lt;</button>
+  <input id="frameSlider" type="range" min="0" value="0">
+  <button id="next">&gt;</button>
+  <span id="frameLabel"></span>
+</div>
+<div class="bar">
+  <label>Diff range <input id="range" type="range" min="1" max="20" step="0.5" value="5"> <span id="rangeVal"></span> &sigma;</label>
+  <label><input id="grid" type="checkbox" checked> show cells (outline = stored in this frame)</label>
+</div>
+
+<div class="read" id="coord" style="margin:0 0 8px"></div>
+<div class="panels" id="panels"></div>
+<p class="stats" id="stats"></p>
+
+<script>
+addEventListener("error", e => { const el = document.getElementById("err"); if (e.message.includes("no data")) return; el.style.display = "block"; el.textContent = "Viewer error: " + e.message; });
+const D = /*DATA*/null;
+if (!D) { document.getElementById("err").style.display = "block"; document.getElementById("err").textContent = "This is the template, it has no data. Run `uv run --script implementation/scripts/cell_cache_demo.py view` and open implementation/data/cache/cell_demo/viewer.html instead."; throw new Error("no data"); }
+const N = D.n, H = D.h, W = D.w, CELL = D.cell;
+const b64 = s => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new Float32Array(u.buffer); };
+const orig = b64(D.orig), stored = b64(D.stored);
+const valid = (() => { const b = atob(D.valid), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; })();
+const vview = k => valid.subarray(k * FS, (k + 1) * FS); // 1 = frame has data at this pixel
+const FS = H * W;
+const view = (a, k) => a.subarray(k * FS, (k + 1) * FS);
+const median = a => { const s = Float32Array.from(a).sort(); return s[s.length >> 1]; };
+const pct = (a, p) => { const s = Float32Array.from(a).sort(); return s[Math.min(s.length - 1, Math.floor(p * s.length))]; };
+
+// per-frame constants from the original (the same stretch is used for original and stored)
+const med = [], lo = [], hi = [];
+for (let k = 0; k < N; k++) { const f = view(orig, k); med.push(median(f)); lo.push(pct(f, 0.01)); hi.push(pct(f, 0.995)); }
+
+const MODES = {
+  orig:   { name: "Original (real data)", kind: "img" },
+  prev:   { name: "Previous original (real, frame k−1)", kind: "img", back: true },
+  stored: { name: "Stored (decoded from cache)", kind: "img" },
+  pstore: { name: "Previous stored (decoded, frame k−1)", kind: "img", back: true },
+  err:    { name: "Stored − Original (cache error)", kind: "diff" },
+  dorig:  { name: "Original − previous original", kind: "diff" },
+  dstore: { name: "Stored − previous stored", kind: "diff" },
+};
+const PANEL_DEFAULTS = ["orig", "prev", "stored", "dorig"];
+
+let k = Math.max(0, Math.min(N - 1, parseInt(location.hash.slice(1)) || 0)), playing = false, timer = null;
+const $ = id => document.getElementById(id);
+const slider = $("frameSlider"); slider.max = N - 1;
+
+function asinhStretch(v) { v = Math.max(0, Math.min(1, v)); return Math.asinh(v * 12) / Math.asinh(12); }
+function diverge(t) { // t in [-1, 1] -> rgb, blue - white - red
+  t = Math.max(-1, Math.min(1, t));
+  if (t >= 0) return [255, 255 * (1 - t) | 0, 255 * (1 - t) | 0];
+  return [255 * (1 + t) | 0, 255 * (1 + t) | 0, 255];
+}
+
+function values(mode, k) {
+  // returns {px: Float32Array of value, kind}
+  const m = MODES[mode];
+  if (mode === "orig") return view(orig, k);
+  if (mode === "stored") return view(stored, k);
+  if (mode === "prev" || mode === "pstore") return k === 0 ? new Float32Array(FS) : view(mode === "prev" ? orig : stored, k - 1);
+  const out = new Float32Array(FS);
+  if (mode === "err") { const a = view(stored, k), b = view(orig, k); for (let i = 0; i < FS; i++) out[i] = a[i] - b[i]; return out; }
+  if (k === 0) return out; // no previous frame
+  const src = mode === "dorig" ? orig : stored;
+  const a = view(src, k), b = view(src, k - 1), ma = median(a), mb = median(b);
+  for (let i = 0; i < FS; i++) out[i] = (a[i] - ma) - (b[i] - mb); // background levels removed first
+  return out;
+}
+
+const ZOOM = 4; // overlay resolution: crisp cell outlines on top of the pixel canvas
+let hover = null, pinned = null; // shared cursor: the same pixel (same sky position) in every panel
+const panels = [];
+function makePanel(i) {
+  const el = document.createElement("div"); el.className = "panel";
+  const sel = document.createElement("select");
+  for (const key in MODES) { const o = document.createElement("option"); o.value = key; o.textContent = MODES[key].name; sel.appendChild(o); }
+  sel.value = PANEL_DEFAULTS[i];
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const ov = document.createElement("canvas"); ov.className = "ov"; ov.width = W * ZOOM; ov.height = H * ZOOM;
+  const wrap = document.createElement("div"); wrap.className = "wrap"; wrap.append(cv, ov);
+  const scale = document.createElement("div"); scale.className = "scale";
+  const read = document.createElement("div"); read.className = "read";
+  el.append(sel, wrap, scale, read);
+  $("panels").appendChild(el);
+  const p = { el, sel, cv, ov, scale, read, vals: null };
+  sel.onchange = () => draw();
+  cv.onmousemove = e => {
+    const r = cv.getBoundingClientRect();
+    const x = Math.floor((e.clientX - r.left) / r.width * W), y = Math.floor((e.clientY - r.top) / r.height * H);
+    if (x < 0 || y < 0 || x >= W || y >= H) return;
+    hover = { x, y }; syncCursor();
+  };
+  cv.onmouseleave = () => { hover = null; syncCursor(); };
+  cv.onclick = () => { if (hover) { pinned = pinned && pinned.x === hover.x && pinned.y === hover.y ? null : { ...hover }; syncCursor(); } };
+  panels.push(p);
+}
+[0, 1, 2, 3].forEach(makePanel);
+
+function drawScale(p, kind) {
+  const c = document.createElement("canvas"); c.width = 160; c.height = 1;
+  const g = c.getContext("2d"), im = g.createImageData(160, 1);
+  for (let x = 0; x < 160; x++) {
+    const t = x / 159;
+    const rgb = kind === "diff" ? diverge(t * 2 - 1) : (v => [v, v, v])(255 * asinhStretch(t));
+    im.data.set([...rgb, 255], x * 4);
+  }
+  g.putImageData(im, 0, 0);
+  const R = +$("range").value;
+  p.scale.replaceChildren(
+    document.createTextNode(kind === "diff" ? `−${R}σ` : "low"), c,
+    document.createTextNode(kind === "diff" ? `+${R}σ` : "high"));
+}
+
+function drawOverlay(p) {
+  const oc = p.ov.getContext("2d"); oc.clearRect(0, 0, p.ov.width, p.ov.height);
+  if ($("grid").checked) {
+    const nx = W / CELL, ny = H / CELL, z = CELL * ZOOM;
+    oc.lineWidth = 1;
+    for (let cy = 0; cy < ny; cy++) for (let cx = 0; cx < nx; cx++) {
+      oc.strokeStyle = D.upd[p.sk][cy * nx + cx] ? "rgba(255,200,60,0.9)" : "rgba(108,182,255,0.3)";
+      oc.strokeRect(cx * z + 0.5, cy * z + 0.5, z - 1, z - 1);
+    }
+  }
+  for (const [pt, col] of [[pinned, "rgba(80,255,160,0.95)"], [hover, "rgba(255,255,255,0.95)"]]) {
+    if (!pt) continue;
+    const x = pt.x * ZOOM, y = pt.y * ZOOM; // pixel box plus cross lines through it
+    oc.beginPath();
+    oc.moveTo(x + ZOOM / 2, 0); oc.lineTo(x + ZOOM / 2, y - 2); oc.moveTo(x + ZOOM / 2, y + ZOOM + 2); oc.lineTo(x + ZOOM / 2, H * ZOOM);
+    oc.moveTo(0, y + ZOOM / 2); oc.lineTo(x - 2, y + ZOOM / 2); oc.moveTo(x + ZOOM + 2, y + ZOOM / 2); oc.lineTo(W * ZOOM, y + ZOOM / 2);
+    oc.rect(x + 0.5, y + 0.5, ZOOM - 1, ZOOM - 1);
+    oc.strokeStyle = "rgba(0,0,0,0.8)"; oc.lineWidth = 4; oc.stroke(); // dark halo so it shows on bright and gold areas
+    oc.strokeStyle = col; oc.lineWidth = 2; oc.stroke();
+  }
+}
+
+function skyOf(x, y) {
+  const s = D.sky, ra = s.ra0 + s.dra_dx * x + s.dra_dy * y, dec = s.dec0 + s.ddec_dx * x + s.ddec_dy * y;
+  return `RA ${ra.toFixed(5)}°  Dec ${dec.toFixed(5)}°`;
+}
+
+function syncCursor() { // same pixel in all panels, one shared coordinate line
+  const pt = hover || pinned;
+  for (const p of panels) {
+    drawOverlay(p);
+    if (!pt || !p.vals) { p.read.textContent = ""; continue; }
+    const v = p.vals[pt.y * W + pt.x];
+    const unit = MODES[p.sel.value].kind === "diff" ? ` (${(v / D.sigma[k]).toFixed(1)} σ)` : "";
+    p.read.textContent = `value=${v.toPrecision(4)}${unit}`;
+  }
+  $("coord").textContent = pt ? `pixel x=${pt.x} y=${pt.y}  ${skyOf(pt.x, pt.y)}${hover ? "" : "  (pinned)"}  cell ${Math.floor(pt.x / CELL)},${Math.floor(pt.y / CELL)}` : "Hover a panel: the same pixel is marked in all panels. Click to pin or unpin it.";
+}
+
+function draw() {
+  const R = +$("range").value; $("rangeVal").textContent = R;
+  const f = D.frames[k];
+  $("frameLabel").textContent = `frame ${k + 1}/${N}  ${f.band} ${f.wave_um.toFixed(3)} µm  MJD ${f.t_min.toFixed(3)} (+${((f.t_min - D.frames[0].t_min) * 24).toFixed(2)} h)  ${f.obs_id}`;
+  slider.value = k;
+  for (const p of panels) {
+    const mode = p.sel.value, kind = MODES[mode].kind;
+    const sk = MODES[mode].back ? Math.max(0, k - 1) : k; // frame whose stretch and cell map apply
+    p.vals = values(mode, k);
+    const ctx = p.cv.getContext("2d"), im = ctx.createImageData(W, H);
+    const va = vview(k), vb = k > 0 ? vview(k - 1) : va, vs = vview(sk);
+    for (let i = 0; i < FS; i++) {
+      let rgb;
+      const missing = (mode === "orig" || mode === "stored") ? !va[i] : (mode === "prev" || mode === "pstore") ? !vs[i] : (mode === "err" ? !va[i] : !(va[i] && vb[i]));
+      if (missing) rgb = [38, 42, 58]; // no data here (target near a detector edge)
+      else if (kind === "img") { const v = asinhStretch((p.vals[i] - lo[sk]) / (hi[sk] - lo[sk])) * 255; rgb = [v, v, v]; }
+      else rgb = diverge(p.vals[i] / D.sigma[k] / R);
+      im.data[i * 4] = rgb[0]; im.data[i * 4 + 1] = rgb[1]; im.data[i * 4 + 2] = rgb[2]; im.data[i * 4 + 3] = 255;
+    }
+    ctx.putImageData(im, 0, 0);
+    p.sk = sk;
+    drawOverlay(p);
+    drawScale(p, kind);
+  }
+  syncCursor();
+  const f0 = D.frames[k];
+  $("stats").textContent = (k === 0 ? "Frame 1 has no previous frame, so previous and difference panels are blank. " : "") +
+    (f0.valid_frac < 0.999 ? `This frame has data for ${(100 * f0.valid_frac).toFixed(0)}% of the grid (target near a detector edge). Dark blue-grey = no data. The cache keeps the older value there, but it is not shown. ` : "") + `Cells stored in this frame: ${f0.n_upd} of ${f0.n_cells}. Diff colors are in units of this frame's median noise (${D.sigma[k].toPrecision(3)}). ` +
+    `Whole store: ${D.store_kb} KB for ${N} frames (float32 pixels: ${D.raw_kb} KB).`;
+}
+
+function step(d) { k = (k + d + N) % N; draw(); }
+$("prev").onclick = () => step(-1); $("next").onclick = () => step(1);
+slider.oninput = () => { k = +slider.value; draw(); };
+$("range").oninput = draw; $("grid").onchange = draw;
+$("play").onclick = () => {
+  playing = !playing; $("play").textContent = playing ? "Pause" : "Play";
+  clearInterval(timer); if (playing) timer = setInterval(() => step(1), 400);
+};
+addEventListener("keydown", e => { if (e.key === "ArrowRight") step(1); if (e.key === "ArrowLeft") step(-1); });
+{ const [, hx, hy] = location.hash.slice(1).split(",").map(Number); // #frame,x,y opens with a pinned pixel
+  if (Number.isFinite(hx) && Number.isFinite(hy) && hx >= 0 && hy >= 0 && hx < W && hy < H) pinned = { x: hx, y: hy }; }
+draw();
+</script>
+</body>
+</html>

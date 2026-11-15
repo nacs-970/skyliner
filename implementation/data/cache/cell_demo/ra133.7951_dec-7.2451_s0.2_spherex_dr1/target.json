@@ -1,0 +1,9 @@
+{
+ "name": "WISE 0855",
+ "ra": 133.795129,
+ "dec": -7.245147,
+ "note": "position listed by NASA in the challenge text",
+ "size_deg": 0.2,
+ "collection": "spherex_dr1",
+ "created": "2026-11-15"
+}

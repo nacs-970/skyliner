@@ -1,0 +1,27 @@
+/* Landing page of the Skyliner web app (index.html). Uses the tokens of drafts/base.css and skin-1-studio.css.
+   SI-generated with Claude Sonnet 5.5, 2026-11-15; see docs/si-log.md. */
+.lp { max-width: 640px; margin: 0 auto; padding: 56px 20px 72px; display: grid; gap: 20px; }
+.lp h1 { margin: 0; font-size: clamp(28px, 6vw, 40px); line-height: 1.08; letter-spacing: -.03em; }
+.lp .lede { margin: 0; color: var(--muted); font-size: 16px; line-height: 1.5; max-width: 52ch; }
+.lf { display: grid; gap: 14px; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius, 8px); background: var(--panel); }
+.lf-row { display: grid; gap: 5px; }
+.lf-row label { color: var(--muted); font-size: 12px; }
+.lf input { font: 16px/1.2 var(--mono, ui-monospace, monospace); padding: 11px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm, 6px); background: var(--field, var(--panel2)); color: var(--text); }
+.lf input::placeholder { color: var(--muted); opacity: .7; }
+.lf input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.lf input[aria-invalid="true"] { border-color: var(--danger, #f0705f); }
+.lf-go { justify-self: start; padding: 10px 18px; font-size: 14px; cursor: pointer; }
+.lf-go:disabled { opacity: .5; cursor: default; }
+.lf-msg { min-height: 1.5em; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.lf-msg.err { color: var(--danger, #f0705f); }
+.lf-msg code { font: 12px var(--mono, ui-monospace, monospace); background: var(--hover); padding: 1px 5px; border-radius: 4px; }
+.lp-ex { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+.lp-ex #l-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.lp-ex .chip { cursor: pointer; padding: 5px 12px; font-size: 13px; color: var(--text); background: var(--panel); border-color: var(--line); }
+.lp-ex .chip:hover { border-color: var(--accent); }
+.lp-ex .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.lp-how { margin: 0; padding-left: 18px; color: var(--muted); font-size: 13px; line-height: 1.6; max-width: 60ch; }
+@media (max-width: 520px) { .lp { padding-top: 32px; } }
+.lf-svc { margin: 0; padding: 10px 12px; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: var(--radius-sm, 6px); background: var(--panel); color: var(--muted); font-size: 13px; line-height: 1.5; }
+.lf-svc[hidden] { display: none; }
+.lf-svc code { font: 12px var(--mono, ui-monospace, monospace); background: var(--hover); padding: 1px 5px; border-radius: 4px; }

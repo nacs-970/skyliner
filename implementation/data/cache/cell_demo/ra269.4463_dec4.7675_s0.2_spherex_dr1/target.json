@@ -1,0 +1,9 @@
+{
+ "name": "Barnard's star",
+ "ra": 269.4463246940175,
+ "dec": 4.767480476786818,
+ "note": "SIMBAD position, moved 268 arcsec to MJD 60949 with its proper motion",
+ "size_deg": 0.2,
+ "collection": "spherex_dr1",
+ "created": "2026-11-15"
+}

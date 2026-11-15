@@ -1,0 +1,35 @@
+{
+ "title": "Skyliner demo video script. Written by the SI assistant from the storyboard in submission/06-demo-script.md; the team owns the words and may change them.",
+ "lines": [
+  {
+   "scene": "title",
+   "say": "Skyliner, by team FixThisNoMistake.",
+   "caption": "Skyliner, by team FixThisNoMistake."
+  },
+  {
+   "scene": "problem",
+   "say": "SPHEREx maps the whole sky every six months. Moving objects show up when you compare images over time.",
+   "caption": "SPHEREx maps the whole sky every six months. Moving objects show up when you compare images over time."
+  },
+  {
+   "scene": "enter",
+   "say": "Type any position.",
+   "caption": "Type any position."
+  },
+  {
+   "scene": "play",
+   "say": "Skyliner fetches real NASA images and plays them in time order, like a short video.",
+   "caption": "Skyliner fetches real NASA images and plays them in time order, like a short video."
+  },
+  {
+   "scene": "gaps",
+   "say": "The gaps are real. You decide what moves.",
+   "caption": "The gaps are real. You decide what moves."
+  },
+  {
+   "scene": "end",
+   "say": "Public NASA data. Open tools.",
+   "caption": "Public NASA data. Open tools."
+  }
+ ]
+}

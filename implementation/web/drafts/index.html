@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skyliner - UI draft</title>
+<meta name="description" content="The chosen visual style (Studio) for Skyliner web app, on sample data.">
+<!-- Gallery of UI drafts. Generated with SI assistance (Claude Sonnet 5.5, 2026-11-14); see docs/si-log.md. -->
+<style>
+  @font-face { font-family: "Geist"; src: url("fonts/geist-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+  :root { color-scheme: dark; --bg: #0d0e10; --card: #151618; --line: #2a2c31; --text: #e9eaec; --muted: #9a9ea8; --accent: #6ea2f0; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 28px 20px 48px; background: var(--bg); color: var(--text); font: 15px/1.5 "Geist", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+  main { max-width: 1200px; margin: 0 auto; }
+  h1 { margin: 0 0 6px; font-size: 24px; letter-spacing: -.02em; }
+  .lede { margin: 0 0 24px; color: var(--muted); max-width: 70ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, 340px); justify-content: start; gap: 18px; }
+  @media (max-width: 420px) { .grid { grid-template-columns: 1fr; } .shot { display: none; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 12px 16px; }
+  .card h2 { margin: 12px 0 4px; font-size: 17px; }
+  .card p { margin: 0 0 8px; color: var(--muted); font-size: 14px; }
+  .shot { display: block; position: relative; aspect-ratio: 16 / 10; overflow: hidden; border: 1px solid var(--line); border-radius: 6px; background: #0b0c10; }
+  .shot iframe { position: absolute; left: 0; top: 0; width: 1440px; height: 900px; border: 0; transform-origin: 0 0; transform: scale(.22); pointer-events: none; }
+  .open { color: var(--accent); }
+  .open:focus-visible, .shot:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .real { margin: 0 0 22px; padding: 12px 14px; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 6px; max-width: 80ch; font-size: 14px; }
+  .note { margin-top: 28px; color: var(--muted); font-size: 13px; max-width: 80ch; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Skyliner: UI draft</h1>
+  <p class="real"><a class="open" href="../index.html"><b>Open the app</b></a>: a blank page where you enter a position; real SPHEREx images of it open in the viewer (style 1 Studio), and a new position is prepared automatically while a progress bar shows how far it is. It needs the local service for new positions (see <a class="open" href="../../server/README.md">the server README</a>) and prepared data for the test targets. The six drafts below use a sample crop and simulated motion.</p>
+  <p class="lede">The chosen style (Studio) for one layout, drawn from the team sketch: a viewer with a toolbar and magnifier inset, transport controls, a video-editing timeline and a collapsible parameters sidebar. The draft is interactive (play, scrub, zoom with a navigator, markers, clip points, display controls). Black is the default theme. It has a dark and light toggle at the top right, and a sidebar toggle (the three-line icon) at the top right of the viewer. Five other styles were tried and removed from the repository on 15 Nov; they remain in the git history.</p>
+  <div class="grid">
+    <article class="card">
+      <a class="shot" href="v1-studio.html" aria-label="Open draft 1 Studio"><iframe src="v1-studio.html" title="Preview of draft 1 Studio" loading="lazy" tabindex="-1"></iframe></a>
+      <h2>1 Studio</h2>
+      <p>Chosen style. Graphite panels, one electric-blue accent, Geist. Dense video-editor look; the most familiar and the safest.</p>
+      <p><a class="open" href="v1-studio.html">Open draft 1 Studio</a></p>
+    </article>
+  </div>
+  <p class="note">The viewer shows a real 192 by 192 pixel crop of one SPHEREx DR1 frame (detector D6, 5 May 2025), not a target. Every frame is that same crop plus simulated noise, drift and a simulated moving point, for testing the controls. The timeline windows follow the observed WISE 0855 windows in DR1 (research/challenge-12/data-findings.md); times inside a window are placeholders. The previews above are scaled down: open a draft to see it at full size. Styles share <code>base.css</code>; each draft adds one <code>skin-*.css</code>.</p>
+</main>
+</body>
+</html>

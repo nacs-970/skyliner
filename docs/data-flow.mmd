@@ -1,0 +1,65 @@
+%%{init: {"flowchart": {"wrappingWidth": 360, "nodeSpacing": 40, "rankSpacing": 42}}}%%
+%% Challenge 12 "Planet X and SPHEREx": the data flow as built on 2026-11-15 (blank landing page, local service, pipeline, viewer).
+%% SI-GENERATED DIAGRAM: drawn with an AI assistant (Claude Sonnet 5.5, Anthropic); the label inside the picture says so, as the rules ask.
+%% Status colors: built and checked, fallback, not built.
+%% Render: mmdc -i docs/data-flow.mmd -o docs/data-flow.svg -b white  (and the same with -o docs/data-flow.png -s 2).
+%% If mmdc cannot find a browser, pass -p with a puppeteer config that sets executablePath, for example to chromium.
+flowchart TD
+    IRSA[("IRSA archive (NASA/IPAC)<br/>SPHEREx level 2 images, release DR1 (spherex_dr1)<br/>102 bands, 0.75 to 5.0 um, six detector arrays D1 to D6")]
+    S3[("Public S3 bucket nasa-irsa-spherex<br/>the same FITS files<br/>HTTP range requests allowed")]
+    SIM[("SIMBAD (CDS)<br/>position and proper motion<br/>only the target name is sent")]
+
+    subgraph PREP["In Python: cell_cache_demo.py (run by the service on demand, or by hand ahead of time)"]
+        direction TB
+        R["resolve: target name to its position at the observing time"]
+        Q["SIA2 cone search, 0.02 degree circle<br/>one row per image: obs_id, t_min, detector, FITS URL"]
+        G["Range-read one 117 px region of IMAGE, VARIANCE and WCS-WAVE<br/>about 2 MB per image, never the whole 65 MB file"]
+        A["Align every frame to one sky grid<br/>drop edge cutouts under 80% covered"]
+        C["Lossy cell-delta store, 10 to 14 times smaller<br/>for display only"]
+        E["Export for the page:<br/>sky.data.js, sky.index.js, sky.store.js"]
+        R --> Q --> G --> A --> C --> E
+    end
+
+    CUT["IRSA cutout service<br/>fallback: 4 MB per image, slower"]
+
+    subgraph PAGE["In the browser: plain HTML, CSS and JavaScript"]
+        direction TB
+        D["cellcache.js decodes the store<br/>(identical to the Python decoder)"]
+        V["Viewer: real observing times with the gaps,<br/>play, zoom, readout in MJy per sr,<br/>requested-position ring, credits"]
+        D --> V
+    end
+
+    U(["A person opens the app on a blank page<br/>and enters RA and Dec"])
+    SVC["Local service (FastAPI)<br/>is this position prepared?<br/>if not: queue a job, run the pipeline one job at a time,<br/>report progress to the progress bar"]
+
+    SIM --> R
+    IRSA --> Q
+    S3 --> G
+    CUT -.-> G
+    E --> D
+    E --> V
+    U --> SVC
+    SVC -->|"prepared: opens at once"| V
+    SVC -->|"new position: runs the pipeline"| R
+
+    NB["Not built: hosting (the service runs on a laptop)<br/>Optional overlays: Gaia DR3, WISE, NEOSSat"]
+    NB -.-> U
+
+    WM["SI-GENERATED DIAGRAM<br/>Drawn by an AI assistant (Claude Sonnet 5.5), 2026-11-15"]
+
+    subgraph LEG["Status"]
+        direction LR
+        L1["Built and checked"]:::built
+        L2["Fallback"]:::fallback
+        L3["Not built"]:::todo
+    end
+
+    classDef built fill:#d1fae5,stroke:#059669,color:#064e3b
+    classDef fallback fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef todo fill:#e5e7eb,stroke:#6b7280,color:#1f2937,stroke-dasharray:4 3
+    classDef mark fill:#fff,stroke:#111,color:#111,stroke-width:2px
+
+    class R,Q,G,A,C,E,D,V,SVC built
+    class CUT fallback
+    class NB todo
+    class WM mark

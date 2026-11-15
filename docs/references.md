@@ -1,0 +1,57 @@
+# References and licenses
+
+Every external data set, code library, text, image and font that ends up in the project is listed here, with its source and license. The submission form's "NASA Data" and "Space Agency Partner Data and Other References" fields are filled from this file, and the originality checkbox covers it.
+
+Rules (from [AGENTS.md](../AGENTS.md), section 2): add a row in the same change that adds the item. Non-NASA data or code must be freely public or open-source licensed. Write "to verify" in the license column until someone has read the license text.
+
+Status values: `planned` (not used yet), `in use`, `dropped`.
+
+## NASA data and resources
+
+| Name | Type | Source | License or terms | Used for | Status |
+|------|------|--------|------------------|----------|--------|
+| SPHEREx spectral images (IRSA) | Data | <https://irsa.ipac.caltech.edu/Missions/spherex.html> | IRSA data use terms (<https://irsa.ipac.caltech.edu/data_use_terms.html>): "Most data served by IRSA is public, with no usage restrictions"; acknowledgement and citation recommended. The SPHEREx page asks that published material using SPHEREx data products carry the acknowledgement in "Acknowledgements to include" below. Read by SI on 15 Nov 2026 (a summary, not legal advice): a team member should read the terms | Core image data for the flipbook. `implementation/scripts/cell_cache_demo.py` finds the images with the IRSA SIA2 service and reads a small region of each from `spherex_dr1` (range reads on the public S3 bucket, listed below; the IRSA cutout service is the fallback) | in use |
+| IRSA SPHEREx tutorial notebooks | Documentation and example code | <https://caltech-ipac.github.io/irsa-tutorials/spherex/> | to verify | Reference for data access | planned |
+| SPHEREx DR1 image `2025W19_1B_0116_1`, detector D6, 192×192 pixel crop (rows and columns 924 to 1115 of the IMAGE extension) | Data, derived image (`implementation/web/drafts/assets/sample-d6-192.png` and the float values in `implementation/web/drafts/sample-d6-192.data.js`) | `https://irsa.ipac.caltech.edu/ibe/data/spherex/dr1/level2/2025W19_1B/l2b-v27-2026-197/6/level2_2025W19_1B_0116_1D6_spx_l2b-v27-2026-197.fits` | same IRSA data use terms as the first row | Sample picture in the UI drafts. Not a target and not a detection | in use (drafts only) |
+| SPHEREx public S3 bucket `nasa-irsa-spherex` (IRSA, AWS Open Data) | Data | <https://nasa-irsa-spherex.s3.amazonaws.com/?list-type=2&delimiter=/> | IRSA data use terms (the AWS registry entry `spherex-qr` gives <https://irsa.ipac.caltech.edu/data_use_terms.html> as its license). Hosted by IRSA through the AWS Open Data Sponsorship Program, bucket region `us-east-1`. Checked 15 Nov 2026 | Tested 14 Nov: listing, CORS headers and HTTP range reads of one frame. Since 15 Nov `cell_cache_demo.py fetch` reads one region of each frame from it with HTTP range requests (IMAGE, VARIANCE and WCS-WAVE rows, about 2 MB per image; the team allowed this on 14 Nov). | in use |
+| Prepared display data of the five NASA test targets (committed to this repository) | Data, derived (`implementation/data/cache/cell_demo/<patch>/target.json`, `D6_full/sky.data.js`, `sky.index.js`, `sky.store.js`, and `targets.js`) | Made by our pipeline from SPHEREx DR1 Level 2 images (`spherex_dr1`) read from IRSA, see the two rows above | The IRSA terms of the rows above apply (public, no usage restrictions, acknowledgement recommended: the text is in "Acknowledgements to include" below and on the page under Credits). A 0.2 degree region of each image resampled to one grid, not the FITS files; detector D6 only, about 21 MB. Decided by the Team Owner on 15 Nov 2026 | Shown by the page with no service and no wait. The files say in their header that SI-written code produced them | in use |
+| SPHEREx Explanatory Supplement (IRSA, PDF) | Documentation | <https://irsa.ipac.caltech.edu/data/SPHEREx/docs/SPHEREx_Expsupp_QR.pdf> | No license or copyright text in the document (searched 15 Nov); IRSA documentation | Version 2.0 (2026-08-25). Read on 15 Nov 2026: Table 16, the `FLAGS` bit definitions (recorded in `research/challenge-12/README.md` as our own summary of bit names and meanings, no text copied). | in use (documentation only) |
+
+## Space agency partner data and other references
+
+| Name | Type | Source | License or terms | Used for | Status |
+|------|------|--------|------------------|----------|--------|
+| Gaia DR3 | Data | <https://archive.stsci.edu/missions-and-data/gaia> | to verify | Optional catalog overlay | planned |
+| WiseView | Existing tool | <http://byw.tools/wiseview> | to verify | Inspiration only, no code reuse unless the license allows | planned |
+| NEOSSat data (Canadian Space Agency) | Data | <https://data.asc-csa.gc.ca/dataset/neossat> | to verify | Optional | planned |
+| Underdog Woof text-to-speech model, voice Juno (two-voice build, `woof_int8.npz`), and the speech it makes | Tool and its generated audio (not distributed in this repository; only the speech is, inside the demo video) | <https://huggingface.co/ConwayResearch/Underdog-Woof> and <https://underdog.ai/woof> (read in the local copy `~/underdog-woof`: `README.md`, `LICENSE`, `NOTICE`, 15 Nov 2026) | Underdog Non-Commercial License 1.0 (not an OSI license): free for non-commercial use with credit, so the title or description of anything published with its audio must say "Underdog Woof" or "underdog.ai"; no monetized use; no training of another model on it. Its NOTICE credits Mimi by Kyutai, LibriTTS-R and Emilia-YODAS (all CC-BY 4.0). The team chose it for the voice-over on 15 Nov. A team member should read the license before the video is published | Voice-over of the demo video (`submission/demo/`), made by `submission/demo/build/make_vo.py`. The speech is SI-generated and the video says so on screen, in its metadata and in `submission/demo/DESCRIPTION.txt` | in use |
+| SPHEREx mission paper, Crill et al. 2024, "SPHEREx: NASA's Near-Infrared Spectrophotometric All-Sky Survey" (arXiv:2404.11017) | Published paper (facts paraphrased, no text or figures copied) | <https://arxiv.org/abs/2404.11017> | arXiv non-exclusive distribution license 1.0 (the paper page links to it): no reuse rights beyond arXiv's distribution, so we paraphrase facts only and copy no text or figures. Checked 15 Nov 2026 | Mission facts for the observing explainer (orbit, exposure, steps, detectors, bands) | in use |
+| SPHEREx survey page (Caltech) | Web page (facts paraphrased) | <https://spherex.caltech.edu/page/survey> | No license or reuse statement on the page (checked 15 Nov; the footer links to an Image Use Policy that was not read). We paraphrase facts only and copy no text or images | Survey strategy facts for the observing explainer (ring 90 degrees from the Sun, sky sampled twice a year, four surveys) | in use |
+| SIMBAD astronomical database (CDS), TAP service at the Harvard mirror `simbad.harvard.edu` | Data (service) | <https://simbad.harvard.edu/simbad/sim-tap> | Free use without registration under the ODbL licence, and CDS asks users to cite Wenger et al. 2000, A&AS 143, 9 and use the acknowledgement below (SIMBAD site, read 15 Nov 2026) | `resolve` command: J2000 position and proper motion of the four NASA test targets without an official position. Only the target name is sent. | in use |
+
+## Software dependencies
+
+One line of justification each. Prefer the standard library and fewer packages (see AGENTS.md section 5).
+
+| Package or library | Version | License | Why we need it | Status |
+|--------------------|---------|---------|----------------|--------|
+| numpy | not pinned yet (resolved by `uv run --script`) | BSD-3-Clause | Array math for the cell-cache demo | in use |
+| astropy | not pinned yet (resolved by `uv run --script`) | BSD-3-Clause | Read FITS and VOTable, apply WCS, in the cell-cache demo | in use |
+| fastapi (and its dependencies starlette and pydantic) | not pinned yet (resolved by `uv run --script`) | MIT | The local service `implementation/server/app.py`: lookup, prepare, progress, static files (the team chose FastAPI on 14 Nov, and asked for on-demand preparation on 15 Nov) | in use |
+| uvicorn | not pinned yet (resolved by `uv run --script`) | BSD-3-Clause | Runs the service | in use |
+| httpx | not pinned yet (resolved by `uv run --script`) | BSD-3-Clause | Only for the service check `implementation/tests/server_check.py` (FastAPI's test client) | in use (tests only) |
+| Phosphor Icons core (SVG files, `regular` and `fill` weights) | 2.1.1 | MIT | Real icon set for the UI drafts, instead of hand-drawn icons (14 glyphs inlined as an SVG sprite) | in use (drafts only) |
+| Geist variable font (`@fontsource-variable/geist`, latin subset, self-hosted) | 5.3.0 | SIL Open Font License 1.1 (text in `implementation/web/drafts/fonts/`) | Interface font for the app, and for the demo video (a copy of the file and the license text is in `submission/demo/assets/fonts/`) | in use |
+| Geist Mono variable font (`@fontsource-variable/geist-mono`, latin subset, self-hosted) | 5.3.0 | SIL Open Font License 1.1 (text in `implementation/web/drafts/fonts/`) | Numbers and coordinates in the app, and in the demo video (a copy is in `submission/demo/assets/fonts/`) | in use |
+| Python-Markdown (`markdown`, PyPI) | not pinned yet (resolved by `uv run --script`) | BSD-3-Clause (to verify on the PyPI page) | `implementation/scripts/build_manual.py` turns `docs/user-manual.md` and `docs/how-it-works.md` into HTML before Chrome prints the PDFs. Not used by the app. | in use (docs build only) |
+| Pillow (`pillow`, PyPI) | not pinned yet (resolved by `uv run --script`) | MIT-CMU (HPND), to verify on the PyPI page | `implementation/scripts/watermark_images.py` adds the "SI-generated" strip under each manual screenshot. Not used by the app. | in use (docs build only) |
+
+## Acknowledgements to include
+
+Wording asked for by the data providers. The real-data page shows it under Credits, and the submission's References field repeats it. Read on 15 Nov 2026 from the pages named below. A team member should check them again before submitting.
+
+- **SPHEREx** (<https://irsa.ipac.caltech.edu/Missions/spherex.html>, Mission Characteristics, Acknowledgement): "This publication makes use of data products from the Spectro-Photometer for the History of the Universe, Epoch of Reionization and Ices Explorer (SPHEREx), which is a joint project of the Jet Propulsion Laboratory and the California Institute of Technology, and is funded by the National Aeronautics and Space Administration."
+- **IRSA** (<https://irsa.ipac.caltech.edu/ack.html>): "This research has made use of the NASA/IPAC Infrared Science Archive, which is funded by the National Aeronautics and Space Administration and operated by the California Institute of Technology."
+- **SIMBAD** (<https://simbad.cds.unistra.fr/guide/>): "This research has made use of the SIMBAD database, operated at CDS, Strasbourg, France." Reference: Wenger et al. 2000, A&AS 143, 9, "The SIMBAD astronomical database".
+
+Still "to verify": the Caltech survey page, the SPHEREx Explanatory Supplement, the IRSA tutorial notebooks, Gaia DR3, WiseView and NEOSSat (the last three are not used).

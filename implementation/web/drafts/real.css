@@ -1,0 +1,27 @@
+/* Extra styles for v1-studio-real.html only (the timeline built from data). Generated with SI assistance (Claude Sonnet 5.5, 2026-11-14); see docs/si-log.md. */
+.track .tick { position: absolute; top: 3px; bottom: 3px; width: 2px; margin-left: -1px; background: var(--clip, var(--text)); opacity: .95; border-radius: 1px; }
+.track .clip { opacity: .28; }
+.track.all .clip { opacity: .55; }
+.track.active .clip { opacity: .45; }
+.track[data-lane] { cursor: pointer; }
+.track.active, .tl-labels > div.active { box-shadow: inset 3px 0 0 var(--clip, var(--accent, #4f8cff)); }
+.tl-labels > div[data-lane] { cursor: pointer; }
+.tl-labels > div[data-lane]:hover { filter: brightness(1.15); }
+.tl-labels > div.noload { opacity: .45; }
+.tl-labels > div b small, .tl-labels > div small { margin-left: auto; }
+.tl-zoom { display: inline-flex; align-items: center; gap: 4px; }
+.tl-zoom .btn { min-width: 26px; padding: 1px 7px; }
+.tl-zoom .btn:disabled { opacity: .4; cursor: default; }
+#tz-info { margin-left: 4px; color: var(--muted); font: 10px var(--mono); }
+.hud.mid { left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; padding: 8px 12px; max-width: 86%; background: rgba(8, 9, 12, .78); border: 1px solid rgba(244, 244, 242, .25); border-radius: 8px; pointer-events: none; }
+.hud.mid b { display: block; margin-bottom: 4px; }
+.hud.mid[hidden] { display: none; }
+.timeline, .timeline * { -webkit-user-select: none; user-select: none; } /* dragging in the timeline must not select its text */
+.posmark { position: absolute; width: 30px; height: 30px; margin: -15px 0 0 -15px; border: 1.5px solid var(--accent); border-radius: 50%; box-shadow: 0 0 0 1px rgba(8, 9, 12, .55), inset 0 0 0 1px rgba(8, 9, 12, .35); pointer-events: none; z-index: 1; }
+.posmark[hidden] { display: none; }
+.intro { display: grid; gap: 4px; padding: 8px 12px; border: 1px solid var(--line, #353a45); border-left: 3px solid var(--accent); border-radius: var(--radius, 6px); background: var(--panel, #14161b); color: var(--text); font-size: 12px; }
+.intro p { margin: 0; line-height: 1.45; }
+.intro-act { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.intro a { color: var(--accent); }
+.intro[hidden] { display: none; }
+.viewer:has(> .intro:not([hidden])) { grid-template-rows: auto auto minmax(0, 1fr) auto; }
