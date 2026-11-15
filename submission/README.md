@@ -14,3 +14,4 @@ The guide is the source of truth for the form fields, the demo limits (at most 7
 | [04-si-use.md](04-si-use.md) | Use of Super Intelligence (SI) |
 | [05-data-and-references.md](05-data-and-references.md) | NASA Data, Space Agency Partner Data and Other References |
 | [06-demo-script.md](06-demo-script.md) | The demo (not a form field; the link goes in field 2) |
+| [07-form-paste-ready.md](07-form-paste-ready.md) | Paste-ready text for every field of the Project tab, in the order of the page (name, summary, links, details, SI boxes, NASA data and other references) |
