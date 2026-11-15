@@ -9,7 +9,7 @@ Status: SI-drafted on 15 Nov 2026 (see [docs/si-log.md](../docs/si-log.md)). Bot
 `https://youtu.be/zIq62jk0xJM`
 
 - What it is: the 24 second demo video (`submission/demo/skyliner-demo.mp4`) on YouTube, visibility "Unlisted" (anyone with the link can watch, no login).
-- Checked on 15 Nov at about 19:15 UTC+7 in a clean headless Chromium profile with no login: the page loads, the video is playable, 24 seconds long, not private.
+- Checked on 15 Nov at about 19:05 UTC+7 in a clean headless Chromium profile with no login: the page loads, the video is playable, 24 seconds long, not private.
 - **To change on YouTube:** the description was empty. Paste `submission/demo/DESCRIPTION.txt` (it has the credit "Underdog Woof" that the voice model's license requires, and the SI statement the Space Apps rules ask for: audio must acknowledge SI generation in descriptive text and metadata). The repository link in it is already filled in. Optional: title "Skyliner demo (SI-generated video and voice)".
 - Rules checked: at most 30 seconds, English voice and burned-in English captions, visible SI label on every frame, no NASA logo, no one under 18. The options (video or 7 slides) are in [06-demo-script.md](06-demo-script.md); the team chose the video.
 
@@ -44,7 +44,7 @@ Fill in after the links exist. Test in a private window, signed out of GitHub, G
 
 | Link | Tested in private window | Date and time (UTC+7) | Result |
 |------|--------------------------|-----------------------|--------|
-| `[DEMO URL]` | | | |
-| `[PUBLIC REPOSITORY URL]` (opens, README visible, no login prompt) | | | |
-| `implementation/web/index.html` from a fresh clone of the public repository (opens, a test target loads) | | | |
+| `https://youtu.be/zIq62jk0xJM` | Clean headless Chromium profile, no login (a person still has to try a normal private window) | 15 Nov, about 19:05 | Plays, 24 s, unlisted. The description was empty: paste `submission/demo/DESCRIPTION.txt`. |
+| `https://github.com/nacs-970/skyliner` (opens, README visible, no login prompt) | Clean headless Chromium profile, no login | 15 Nov, about 19:17 | Public, MIT, README with the demo link visible. |
+| `implementation/web/index.html` from a fresh clone of the public repository (opens, a test target loads) | Anonymous HTTPS clone, headless Chrome | 15 Nov, about 19:17 | `web_real_page_check.js` passes on the clone (the viewer opens on the prepared data from a file). |
 | `[LIVE PAGE URL]` (only if the team enables GitHub Pages) | | | |
